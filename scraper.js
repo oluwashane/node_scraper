@@ -1,9 +1,9 @@
 // scraper.js
 const { chromium } = require('playwright');
 
-async function* scrapeSalonDetails(signal) {
+async function* scrapeSalonDetails(signal, url) {
 
-  const baseURL = 'https://www.treatwell.de/orte/behandlung-gruppe-massage/angebot-typ-lokal/in-berlin-de/'; // Add this line
+  const baseURL = url
 
   const browser = await chromium.launch({ headless: true });
   signal.addEventListener('abort', () => browser.close());

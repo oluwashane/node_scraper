@@ -29,88 +29,9 @@
     }
   });
 
-  // app.post('/start', async (req, res) => {
-  //   if (isProcessing) {
-  //     return res.status(429).json({ error: 'Processing already in progress' });
-  //   }
-
-  //   isProcessing = true;
-  //   store.clear();
-  //   scrapeController = new AbortController();
-
-  //   // Immediate response to start streaming progress
-  //   res.writeHead(200, {
-  //     'Content-Type': 'application/json',
-  //     'Transfer-Encoding': 'chunked'
-  //   });
-
-  //   try {
-  //     // Pipeline: Scrape -> Enrich -> Store
-  //     const scrapingStream = scrapeSalonDetails(scrapeController.signal);
-      
-  //     await PromisePool
-  //       .withConcurrency(2) // Reduced concurrency for better proxy performance
-  //       .for(scrapingStream)
-  //       .handleError(async (error) => {
-  //         console.error('Pipeline error:', error);
-  //         return { shouldCollect: true };
-  //       })
-  //       .process(async (business) => {
-  //         await sleep(200)
-  //         try {
-  //           // Enrich with both name and address
-  //           const info = await searchBusiness(business.name);
-  //           console.log('checking info', info)
-            
-  //           // Merge scraped data with enrichment results
-  //           const record = { 
-  //             ...business, 
-  //             ...info,
-  //             enrichment_status: info.error ? 'failed' : 'success'
-  //           };
-            
-  //           store.add(record);
-            
-  //           // Stream partial updates to client
-  //           res.write(JSON.stringify({
-  //             id: record.id,
-  //             name: record.name,
-  //             status: 'enriched',
-  //             owner: record.owner_name,
-  //             email: record.email,
-  //             phone: record.phone,
-  //             verified: record.verified
-  //           }) + '\n');
-  //         } catch (error) {
-  //           const errorRecord = { 
-  //             ...business, 
-  //             error: error.message,
-  //             enrichment_status: 'failed'
-  //           };
-  //           store.add(errorRecord);
-            
-  //           res.write(JSON.stringify({
-  //             id: errorRecord.id,
-  //             name: errorRecord.name,
-  //             status: 'failed',
-  //             error: error.message
-  //           }) + '\n');
-  //         }
-  //       });
-
-  //     res.end(JSON.stringify({ status: 'completed' }));
-  //   } catch (error) {
-  //     console.error('Processing failed:', error);
-  //     res.end(JSON.stringify({ status: 'failed', error: error.message }));
-  //   } finally {
-  //     isProcessing = false;
-  //   }
-  // });
-
-
+ 
   app.post('/start', async (req, res) => {
-    const { baseURL, maxProcess = 1 } = req.body;
-    console.log('checking baseUrl', baseURL, maxProcess)
+    const { baseURL, maxProcess = 1 } = req.body;    
 
     if (isProcessing) {
       return res.status(429).json({ error: 'Processing already in progress' });
@@ -149,11 +70,12 @@
 
           await sleep(200);
           try {
-            const info = await searchBusiness(business.name);
+            const info = await searchBusiness(business.name, business.address);
+            console.log('info', info)
             const record = {
               id: count + 1,
               ...business,
-              ...info.parsed,
+              ...info,
               enrichment_status: info.error ? 'failed' : 'success'
             };
 

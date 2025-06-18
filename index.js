@@ -31,7 +31,7 @@
 
  
   app.post('/start', async (req, res) => {
-    const { baseURL, maxProcess = 1 } = req.body;    
+    const { baseURL, maxProcess = process.env.MAX_PROCESS } = req.body;    
 
     if (isProcessing) {
       return res.status(429).json({ error: 'Processing already in progress' });
@@ -71,7 +71,6 @@
           await sleep(200);
           try {
             const info = await searchBusiness(business.name, business.address);
-            console.log('info', info)
             const record = {
               id: count + 1,
               ...business,
